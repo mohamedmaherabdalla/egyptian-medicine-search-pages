@@ -3,30 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Egyptian Medicine Search Demo</title>
+  <title>Medicine lookup</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main>
     <div class="topline">
       <div>
-        <div class="brand">Egyptian medicine search</div>
-        <div class="hint">Search by brand, Arabic alias, strength, form, or heard spelling.</div>
+        <div class="brand">Medicine lookup</div>
       </div>
       <div id="status" class="status">Loading catalog...</div>
     </div>
 
     <form class="search-panel" id="searchForm">
-      <input id="query" type="search" autocomplete="off" dir="auto" placeholder="Search medicine, e.g. banadol cold, اوجمنتين 1 جم">
+      <input id="query" type="search" autocomplete="off" dir="auto" placeholder="Brand, ingredient, Arabic name, strength...">
       <button id="searchBtn" type="submit">Search</button>
     </form>
 
     <div id="error" class="error"></div>
-    <div id="summary" class="summary">Type a medicine name to search the catalog.</div>
+    <div id="summary" class="summary"></div>
 
-    <section id="results" class="results">
-      <div class="empty">No search yet.</div>
-    </section>
+    <section id="results" class="results"></section>
   </main>
 
   <script src="app.js"></script>

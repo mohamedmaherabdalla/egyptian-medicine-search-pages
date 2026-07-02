@@ -364,6 +364,38 @@ if (typeof window !== "undefined") {
     return String(value).split("|").map(v => v.trim()).filter(Boolean);
   }
 
+  function humanWarning(flag) {
+    const labels = {
+      NON_MEDICINE_OR_METADATA: "Not a medicine record",
+      UNKNOWN_ROUTE: "Unknown route",
+      MISSING_COMPOSITION: "Missing composition",
+      ROUTE_CONFLICT: "Route conflict",
+      QUALITY_REVIEW: "Review",
+      ILLEGAL_IMPORT: "Illegal import",
+      CANCELLED: "Cancelled",
+      "N/A": "N/A",
+    };
+    return labels[flag] || flag.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, ch => ch.toUpperCase());
+  }
+
+  function humanRoute(route) {
+    const labels = {
+      oral_solid: "Tablet / capsule",
+      oral_liquid: "Oral liquid",
+      injection: "Injection",
+      topical: "Topical",
+      ophthalmic: "Eye",
+      otic: "Ear",
+      rectal: "Rectal",
+      vaginal: "Vaginal",
+      mouth: "Mouth",
+      spray: "Spray",
+      soap: "Soap",
+      unknown: "Unknown route",
+    };
+    return labels[route] || route.replaceAll("_", " ");
+  }
+
   function badge(text, cls = "") {
     return `<span class="badge ${cls}">${esc(text)}</span>`;
   }
@@ -376,29 +408,23 @@ if (typeof window !== "undefined") {
   function renderSummary(data, query) {
     const rows = data.results || [];
     if (!query) {
-      summaryEl.textContent = catalog.length
-        ? `Ready to search ${catalog.length.toLocaleString()} medicines.`
-        : "Type a medicine name to search the catalog.";
+      summaryEl.textContent = "";
       return;
     }
-    const warningCount = rows.filter(r => r.warnings).length;
-    const clarifyCount = rows.filter(r => r.needs_clarification).length;
-    const pieces = [`${rows.length} candidates for "${query}"`];
-    if (clarifyCount) pieces.push(`${clarifyCount} need confirmation`);
-    if (warningCount) pieces.push(`${warningCount} with warnings`);
-    summaryEl.textContent = pieces.join(" · ");
+    const count = rows.length === 1 ? "1 match" : `${rows.length} matches`;
+    summaryEl.textContent = `${count} for "${query}"`;
   }
 
   function renderResults(data) {
     const rows = data.results || [];
     if (!rows.length) {
-      resultsEl.innerHTML = `<div class="empty">No candidates found. Try a longer name, Arabic alias, strength, or dosage form.</div>`;
+      resultsEl.innerHTML = `<div class="empty">No matches. Try the brand only, remove the strength, or use the Arabic name.</div>`;
       return;
     }
     resultsEl.innerHTML = rows.map(r => {
-      const warnings = splitPipes(r.warnings).map(w => badge(w.replaceAll("_", " "), "warn")).join("");
+      const warnings = splitPipes(r.warnings).map(w => badge(humanWarning(w), "warn")).join("");
       const clarify = r.needs_clarification ? badge("confirm exact product", "ask") : "";
-      const route = r.route_family && r.route_family !== "-" ? badge(r.route_family.replaceAll("_", " ")) : "";
+      const route = r.route_family && r.route_family !== "-" ? badge(humanRoute(r.route_family)) : "";
       return `
         <article class="result">
           <div class="rank">${esc(r.rank)}</div>
