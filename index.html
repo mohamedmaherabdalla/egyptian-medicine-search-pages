@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Egyptian Medicine Search Demo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Egyptian Medicine Search Demo</h1>
+        <div class="sub">Try English, Arabic, typo, and heard-spelling queries. Results are ranked candidates, not automatic medical selections.</div>
+      </div>
+      <div id="status" class="status">Loading catalog...</div>
+    </header>
+
+    <section class="search-panel">
+      <div class="search-row">
+        <input id="query" type="search" autocomplete="off" placeholder="Type a medicine name, e.g. ogmentin 625 or ليبتور ٨٠">
+        <button id="searchBtn">Search</button>
+      </div>
+      <div id="examples" class="examples"></div>
+    </section>
+
+    <div id="error" class="error"></div>
+
+    <section class="stats">
+      <div class="stat"><div class="k">Results</div><div id="statResults" class="v">0</div></div>
+      <div class="stat"><div class="k">Need Confirmation</div><div id="statClarify" class="v">0</div></div>
+      <div class="stat"><div class="k">With Warnings</div><div id="statWarnings" class="v">0</div></div>
+      <div class="stat"><div class="k">Response</div><div id="statMs" class="v">-</div></div>
+    </section>
+
+    <section id="results" class="results">
+      <div class="empty">Search results will appear here.</div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
