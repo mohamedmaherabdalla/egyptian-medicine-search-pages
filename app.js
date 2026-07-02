@@ -38,6 +38,7 @@ const MedSearch = (() => {
   ]);
 
   const BASE_ALIASES = new Map([
+    ["BANADOL", "PANADOL"], ["BANADOLCOLD", "PANADOL"], ["BANADOLE", "PANADOL"],
     ["BANDOL", "PANADOL"], ["PANDOL", "PANADOL"], ["PANDOLCOLD", "PANADOL"], ["BANDOLCOLD", "PANADOL"],
     ["PANADL", "PANADOL"], ["PANADOLE", "PANADOL"], ["بنادول", "PANADOL"], ["باندول", "PANADOL"],
     ["OGMENTIN", "AUGMENTIN"], ["OGMNTIN", "AUGMENTIN"], ["AUGMNTIN", "AUGMENTIN"], ["AUGMANTIN", "AUGMENTIN"],
