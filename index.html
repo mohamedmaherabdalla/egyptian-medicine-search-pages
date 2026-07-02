@@ -8,33 +8,24 @@
 </head>
 <body>
   <main>
-    <header>
+    <div class="topline">
       <div>
-        <h1>Egyptian Medicine Search Demo</h1>
-        <div class="sub">Try English, Arabic, typo, and heard-spelling queries. Results are ranked candidates, not automatic medical selections.</div>
+        <div class="brand">Egyptian medicine search</div>
+        <div class="hint">Search by brand, Arabic alias, strength, form, or heard spelling.</div>
       </div>
       <div id="status" class="status">Loading catalog...</div>
-    </header>
+    </div>
 
-    <section class="search-panel">
-      <div class="search-row">
-        <input id="query" type="search" autocomplete="off" placeholder="Type a medicine name, e.g. ogmentin 625 or ليبتور ٨٠">
-        <button id="searchBtn">Search</button>
-      </div>
-      <div id="examples" class="examples"></div>
-    </section>
+    <form class="search-panel" id="searchForm">
+      <input id="query" type="search" autocomplete="off" dir="auto" placeholder="Search medicine, e.g. banadol cold, اوجمنتين 1 جم">
+      <button id="searchBtn" type="submit">Search</button>
+    </form>
 
     <div id="error" class="error"></div>
-
-    <section class="stats">
-      <div class="stat"><div class="k">Results</div><div id="statResults" class="v">0</div></div>
-      <div class="stat"><div class="k">Need Confirmation</div><div id="statClarify" class="v">0</div></div>
-      <div class="stat"><div class="k">With Warnings</div><div id="statWarnings" class="v">0</div></div>
-      <div class="stat"><div class="k">Response</div><div id="statMs" class="v">-</div></div>
-    </section>
+    <div id="summary" class="summary">Type a medicine name to search the catalog.</div>
 
     <section id="results" class="results">
-      <div class="empty">Search results will appear here.</div>
+      <div class="empty">No search yet.</div>
     </section>
   </main>
 

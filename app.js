@@ -345,10 +345,11 @@ if (typeof window !== "undefined") {
 
   const queryInput = document.getElementById("query");
   const searchBtn = document.getElementById("searchBtn");
+  const searchForm = document.getElementById("searchForm");
   const resultsEl = document.getElementById("results");
   const errorEl = document.getElementById("error");
   const statusEl = document.getElementById("status");
-  const examplesEl = document.getElementById("examples");
+  const summaryEl = document.getElementById("summary");
 
   let catalog = [];
 
@@ -363,8 +364,8 @@ if (typeof window !== "undefined") {
     return String(value).split("|").map(v => v.trim()).filter(Boolean);
   }
 
-  function pill(text, cls = "") {
-    return `<span class="pill ${cls}">${esc(text)}</span>`;
+  function badge(text, cls = "") {
+    return `<span class="badge ${cls}">${esc(text)}</span>`;
   }
 
   function showError(message) {
@@ -372,69 +373,65 @@ if (typeof window !== "undefined") {
     errorEl.style.display = message ? "block" : "none";
   }
 
-  function renderStats(data) {
+  function renderSummary(data, query) {
     const rows = data.results || [];
-    document.getElementById("statResults").textContent = rows.length;
-    document.getElementById("statClarify").textContent = rows.filter(r => r.needs_clarification).length;
-    document.getElementById("statWarnings").textContent = rows.filter(r => r.warnings).length;
-    document.getElementById("statMs").textContent = data.elapsed_ms ? `${Math.round(data.elapsed_ms)}ms` : "-";
+    if (!query) {
+      summaryEl.textContent = catalog.length
+        ? `Ready to search ${catalog.length.toLocaleString()} medicines.`
+        : "Type a medicine name to search the catalog.";
+      return;
+    }
+    const warningCount = rows.filter(r => r.warnings).length;
+    const clarifyCount = rows.filter(r => r.needs_clarification).length;
+    const pieces = [`${rows.length} candidates for "${query}"`];
+    if (clarifyCount) pieces.push(`${clarifyCount} need confirmation`);
+    if (warningCount) pieces.push(`${warningCount} with warnings`);
+    summaryEl.textContent = pieces.join(" · ");
   }
 
   function renderResults(data) {
     const rows = data.results || [];
     if (!rows.length) {
-      resultsEl.innerHTML = `<div class="empty">No candidates returned. Try a longer or cleaner query.</div>`;
+      resultsEl.innerHTML = `<div class="empty">No candidates found. Try a longer name, Arabic alias, strength, or dosage form.</div>`;
       return;
     }
     resultsEl.innerHTML = rows.map(r => {
-      const warnings = splitPipes(r.warnings).map(w => pill(w, "warn")).join("");
-      const signals = splitPipes(r.matched_signals).slice(0, 8).map(s => pill(s)).join("");
-      const clarify = r.needs_clarification ? pill("doctor confirmation needed", "ask") : "";
+      const warnings = splitPipes(r.warnings).map(w => badge(w.replaceAll("_", " "), "warn")).join("");
+      const clarify = r.needs_clarification ? badge("confirm exact product", "ask") : "";
+      const route = r.route_family && r.route_family !== "-" ? badge(r.route_family.replaceAll("_", " ")) : "";
       return `
         <article class="result">
           <div class="rank">${esc(r.rank)}</div>
           <div>
-            <div class="name">${esc(r.commercial_name_en)}</div>
-            <div class="meta">
-              <div><b>Arabic:</b> ${esc(r.commercial_name_ar || "-")}</div>
-              <div><b>Family:</b> ${esc(r.base_group_key || "-")}</div>
-              <div><b>Ingredient:</b> ${esc(r.ingredient_key || "-")}</div>
-              <div><b>Route:</b> ${esc(r.route_family || "-")}</div>
-              <div><b>Manufacturer:</b> ${esc(r.manufacturer || "-")}</div>
-              <div><b>Price:</b> ${esc(r.price_egp || "-")} EGP</div>
+            <div class="name-row">
+              <div class="name" dir="auto">${esc(r.commercial_name_en)}</div>
+              <div class="price">${esc(r.price_egp || "-")} EGP</div>
             </div>
-            <div class="pills">${clarify}${warnings}${signals}</div>
-          </div>
-          <div class="side">
-            <div>score</div>
-            <div class="score">${esc(r.score)}</div>
+            <div class="primary-meta">
+              <span dir="auto">${esc(r.commercial_name_ar || "-")}</span>
+              <span dir="auto">${esc(r.ingredient_key || "-")}</span>
+            </div>
+            <div class="secondary-meta">
+              <div><b>Family:</b> ${esc(r.base_group_key || "-")}</div>
+              <div><b>Manufacturer:</b> ${esc(r.manufacturer || "-")}</div>
+              <div><b>Class:</b> ${esc(r.drug_class || "-")}</div>
+            </div>
+            <div class="badges">${route}${clarify}${warnings}</div>
           </div>
         </article>`;
     }).join("");
-  }
-
-  function renderExamples() {
-    examplesEl.innerHTML = MedSearch.EXAMPLES.map(item => (
-      `<button type="button" class="chip" data-query="${esc(item.query)}">${esc(item.label)}: ${esc(item.query)}</button>`
-    )).join("");
-    examplesEl.querySelectorAll(".chip").forEach(btn => {
-      btn.addEventListener("click", () => {
-        queryInput.value = btn.dataset.query;
-        search();
-      });
-    });
   }
 
   function search() {
     const q = queryInput.value.trim();
     showError("");
     if (!q) {
-      resultsEl.innerHTML = `<div class="empty">Type a query first.</div>`;
-      renderStats({ results: [] });
+      resultsEl.innerHTML = `<div class="empty">Type a medicine name first.</div>`;
+      renderSummary({ results: [] }, "");
       return;
     }
     const data = MedSearch.searchCatalog(catalog, q, 20);
-    renderStats(data);
+    renderSummary(data, q);
     renderResults(data);
   }
 
@@ -445,7 +442,8 @@ if (typeof window !== "undefined") {
       if (!res.ok) throw new Error(`Catalog request failed: ${res.status}`);
       const payload = await res.json();
       catalog = MedSearch.prepareCatalog(payload.records);
-      statusEl.textContent = `Ready. ${catalog.length.toLocaleString()} candidates loaded`;
+      statusEl.textContent = `${catalog.length.toLocaleString()} medicines`;
+      renderSummary({ results: [] }, "");
       searchBtn.disabled = false;
     } catch (err) {
       statusEl.textContent = "Catalog failed";
@@ -453,12 +451,14 @@ if (typeof window !== "undefined") {
     }
   }
 
-  searchBtn.addEventListener("click", search);
+  searchForm.addEventListener("submit", event => {
+    event.preventDefault();
+    search();
+  });
   queryInput.addEventListener("keydown", event => {
     if (event.key === "Enter") search();
   });
 
   searchBtn.disabled = true;
-  renderExamples();
   loadCatalog();
 }
